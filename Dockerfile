@@ -19,6 +19,7 @@ RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt
 
 COPY --chown=appuser:appgroup app ./app
+COPY --chown=appuser:appgroup migrations ./migrations
 
 USER appuser
 

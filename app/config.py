@@ -15,3 +15,11 @@ class Config:
     }
 
     APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+
+
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///:memory:",
+)
+
+SQLALCHEMY_TRACK_MODIFICATIONS = False
