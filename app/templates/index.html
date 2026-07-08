@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AWS Cloud Vault</title>
+</head>
+
+<body>
+    <main>
+        <h1>AWS Cloud Vault</h1>
+
+        <p>
+            Приватное файловое хранилище на Amazon S3.
+        </p>
+
+        <section>
+            <h2>Загрузить файл</h2>
+
+            <p>
+                Разрешённые типы:
+                .{{ allowed_extensions | join(", .") }}
+            </p>
+
+            <p>
+                Максимальный размер: 10 МБ
+            </p>
+
+            <form
+                action="/upload"
+                method="post"
+                enctype="multipart/form-data"
+            >
+                <label for="file">
+                    Выберите файл:
+                </label>
+
+                <input
+                    id="file"
+                    name="file"
+                    type="file"
+                    accept=".txt,.pdf,.png,.jpg,.jpeg"
+                    required
+                >
+
+                <button type="submit">
+                    Загрузить
+                </button>
+            </form>
+        </section>
+
+        <footer>
+            <p>Version: {{ version }}</p>
+        </footer>
+    </main>
+</body>
+</html>
