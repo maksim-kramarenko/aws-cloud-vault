@@ -1,6 +1,13 @@
 from pathlib import Path
+from uuid import uuid4
 
 from flask import Blueprint, current_app, jsonify, render_template, request
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.extensions import db
+from app.models import FileRecord
+from app.services.s3_service import delete_file, upload_file
+
 
 
 main = Blueprint("main", __name__)
@@ -42,7 +49,56 @@ def upload():
             filename=original_filename,
         ), 415
 
+    uploaded_file.stream.seek(0, 2)
+    size_bytes = uploaded_file.stream.tell()
+    uploaded_file.stream.seek(0)
+
+    object_key = f"uploads/{uuid4()}.{extension}"
+    content_type = (
+        uploaded_file.mimetype
+        or "application/octet-stream"
+    )
+
+    try:
+        upload_file(
+            file_object=uploaded_file.stream,
+            object_key=object_key,
+            content_type=content_type,
+        )
+
+        record = FileRecord(
+            original_filename=original_filename,
+            object_key=object_key,
+            size_bytes=size_bytes,
+            content_type=content_type,
+        )
+
+        db.session.add(record)
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+
+        try:
+            delete_file(object_key)
+        except Exception:
+            current_app.logger.exception(
+                "Failed to remove orphaned S3 object"
+            )
+
+        return jsonify(error="database operation failed"), 500
+
+    except Exception:
+        current_app.logger.exception("File upload failed")
+        return jsonify(error="storage operation failed"), 502
+
     return jsonify(
-        message="file accepted",
-        filename=original_filename,
-    ), 200
+        message="file uploaded",
+        file={
+            "id": record.id,
+            "filename": record.original_filename,
+            "size_bytes": record.size_bytes,
+            "content_type": record.content_type,
+            "object_key": record.object_key,
+        },
+    ), 201
