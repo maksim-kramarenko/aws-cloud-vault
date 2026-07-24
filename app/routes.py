@@ -31,7 +31,32 @@ def index():
 @main.get("/health")
 def health():
     return jsonify(status="healthy"), 200
+@main.get("/files")
+def list_files():
+    records = (
+        FileRecord.query
+        .order_by(
+            FileRecord.created_at.desc(),
+            FileRecord.id.desc(),
+        )
+        .all()
+    )
 
+    files = [
+        {
+            "id": record.id,
+            "filename": record.original_filename,
+            "size_bytes": record.size_bytes,
+            "content_type": record.content_type,
+            "created_at": record.created_at.isoformat(),
+        }
+        for record in records
+    ]
+
+    return jsonify(
+        count=len(files),
+        files=files,
+    ), 200
 
 @main.post("/upload")
 def upload():
