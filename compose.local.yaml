@@ -26,6 +26,13 @@ services:
     container_name: cloud-vault-app
     env_file:
       - .env
+    environment:
+      AWS_PROFILE: cloud-vault
+      AWS_SHARED_CREDENTIALS_FILE: /run/secrets/aws_credentials
+      AWS_CONFIG_FILE: /run/secrets/aws_config
+    secrets:
+      - aws_credentials
+      - aws_config
     expose:
       - "8000"
     depends_on:
@@ -47,3 +54,10 @@ services:
 
 volumes:
   postgres_data:
+
+secrets:
+  aws_credentials:
+    file: ${HOME}/.aws/credentials
+
+  aws_config:
+    file: ${HOME}/.aws/config
